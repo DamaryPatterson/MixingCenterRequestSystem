@@ -1,0 +1,65 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+@{
+    var devMode = Env.EnvironmentName == "Development" && Config.GetValue<bool>("DevMode");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mixing Center Requests</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-sm navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">Mixing Center Requests</a>
+            <ul class="navbar-nav me-auto">
+                @if (User.IsInRole("MixingCenter"))
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Requests" asp-action="Create">New Request</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Requests" asp-action="Mine">My Requests</a></li>
+                }
+                @if (User.IsInRole("DSC"))
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Dsc" asp-action="Index">DSC Queue</a></li>
+                }
+            </ul>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span class="navbar-text text-white me-3">@User.Identity.Name</span>
+                @if (devMode)
+                {
+                    <a class="btn btn-warning btn-sm" asp-controller="Dev" asp-action="Index">Dev Tools</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-light btn-sm" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+                }
+            }
+        </div>
+    </nav>
+
+    <main class="container pb-5">
+        @if (TempData["Message"] is string msg)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @msg <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] is string err)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @err <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

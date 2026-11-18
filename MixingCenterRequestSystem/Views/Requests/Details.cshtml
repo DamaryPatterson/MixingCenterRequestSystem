@@ -1,0 +1,41 @@
+﻿@model RequestDetailsVm
+@{
+    ViewData["Title"] = $"Request #{Model.Header.Id}";
+}
+
+<h2>Request #@Model.Header.Id</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Mixing Center</dt>
+    <dd class="col-sm-9">@Model.Header.MixingCenter</dd>
+    <dt class="col-sm-3">Date Needed</dt>
+    <dd class="col-sm-9">@Model.Header.DateNeeded?.ToString("dd MMM yyyy")</dd>
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9"><partial name="_StatusBadge" model="Model.Header.Status" /></dd>
+    @if (!string.IsNullOrWhiteSpace(Model.Header.ApproverComments))
+    {
+        <dt class="col-sm-3">City Manager Comments</dt>
+        <dd class="col-sm-9">@Model.Header.ApproverComments</dd>
+    }
+</dl>
+
+<table class="table">
+    <thead>
+        <tr><th>Item</th><th>Code</th><th>Requested</th><th>Supplied</th><th>Status</th><th>DSC Comment</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var l in Model.Lines)
+        {
+            <tr>
+                <td>@l.Title</td>
+                <td>@l.ItemCode</td>
+                <td>@l.QtyRequested</td>
+                <td>@(l.LineStatus == "Pending" ? "-" : l.QtySupplied.ToString())</td>
+                <td><partial name="_StatusBadge" model="l.LineStatus" /></td>
+                <td>@l.DscComment</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Mine" class="btn btn-outline-secondary">Back</a>

@@ -1,0 +1,47 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<h2 class="mb-4">Welcome, @User.Identity?.Name</h2>
+
+<div class="row g-3">
+    @if (User.IsInRole("MixingCenter"))
+    {
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">New Request</h5>
+                    <p class="card-text">Request colorants and operating supplies from the DSC.</p>
+                    <a class="btn btn-primary" asp-controller="Requests" asp-action="Create">Create request</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">My Requests</h5>
+                    <p class="card-text">Track approval and see what the DSC supplied.</p>
+                    <a class="btn btn-outline-primary" asp-controller="Requests" asp-action="Mine">View requests</a>
+                </div>
+            </div>
+        </div>
+    }
+    @if (User.IsInRole("DSC"))
+    {
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">DSC Queue</h5>
+                    <p class="card-text">Approved requests waiting to be supplied.</p>
+                    <a class="btn btn-success" asp-controller="Dsc" asp-action="Index">Open queue</a>
+                </div>
+            </div>
+        </div>
+    }
+    @if (!User.IsInRole("MixingCenter") && !User.IsInRole("DSC"))
+    {
+        <div class="alert alert-warning">
+            You don't have access to this system yet. Contact IT to be assigned a role.
+        </div>
+    }
+</div>

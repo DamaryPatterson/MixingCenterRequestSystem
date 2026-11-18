@@ -1,0 +1,34 @@
+﻿@model List<RequestHeader>
+@{
+    ViewData["Title"] = "My Requests";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>My Requests</h2>
+    <a asp-action="Create" class="btn btn-primary">New Request</a>
+</div>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">You haven't submitted any requests yet.</p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr><th>#</th><th>Mixing Center</th><th>Date Needed</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model)
+            {
+                <tr>
+                    <td>@r.Id</td>
+                    <td>@r.MixingCenter</td>
+                    <td>@r.DateNeeded?.ToString("dd MMM yyyy")</td>
+                    <td><partial name="_StatusBadge" model="r.Status" /></td>
+                    <td><a asp-action="Details" asp-route-id="@r.Id">View</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,81 @@
+﻿@model FulfilVm
+@{
+    ViewData["Title"] = $"Fulfil #{Model.RequestId}";
+}
+
+<h2>Request #@Model.RequestId – @Model.Header?.MixingCenter</h2>
+<p class="text-muted">
+    Requested by @Model.Header?.RequestedBy · Needed @Model.Header?.DateNeeded?.ToString("dd MMM yyyy")
+</p>
+
+<form asp-action="Fulfil" method="post" id="fulfilForm">
+    <input type="hidden" asp-for="RequestId" />
+
+    <table class="table align-middle">
+        <thead>
+            <tr><th>Item</th><th>Requested</th><th>Supply?</th><th style="width:150px">Qty Supplied</th><th>Comment</th></tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < Model.Lines.Count; i++)
+            {
+                <tr class="line-row">
+                    <td>
+                        @Model.Lines[i].Title
+                        <input type="hidden" asp-for="Lines[i].LineId" />
+                    </td>
+                    <td>@Model.Lines[i].QtyRequested</td>
+                    <td>
+                        <div class="form-check form-switch">
+                            <input asp-for="Lines[i].Supply" class="form-check-input supply-toggle" role="switch" />
+                        </div>
+                    </td>
+                    <td>
+                        <input asp-for="Lines[i].QtySupplied" type="number" min="0" step="any"
+                               max="@Model.Lines[i].QtyRequested" class="form-control qty-input"
+                               data-requested="@Model.Lines[i].QtyRequested" />
+                    </td>
+                    <td>
+                        <input asp-for="Lines[i].Comment" class="form-control" placeholder="e.g. out of stock" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success">Complete</button>
+        <a asp-action="Index" class="btn btn-link">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Declined lines: lock qty at 0. Supplied lines: restore requested qty.
+        document.querySelectorAll('.line-row').forEach(row => {
+            const toggle = row.querySelector('.supply-toggle');
+            const qty = row.querySelector('.qty-input');
+            const apply = () => {
+                if (toggle.checked) {
+                    qty.readOnly = false;
+                    if (Number(qty.value) === 0) qty.value = qty.dataset.requested;
+                    row.classList.remove('table-secondary');
+                } else {
+                    qty.value = 0;
+                    qty.readOnly = true;
+                    row.classList.add('table-secondary');
+                }
+            };
+            toggle.addEventListener('change', apply);
+            apply();
+        });
+
+        document.getElementById('fulfilForm').addEventListener('submit', e => {
+            const declined = document.querySelectorAll('.supply-toggle:not(:checked)').length;
+            const total = document.querySelectorAll('.supply-toggle').length;
+            const msg = declined === total ? 'Decline ALL items on this request?'
+                : declined > 0 ? `Supply ${total - declined} item(s) and decline ${declined}?`
+                    : 'Supply all items?';
+            if (!confirm(msg)) e.preventDefault();
+        });
+    </script>
+}

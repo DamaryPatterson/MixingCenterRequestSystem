@@ -1,0 +1,32 @@
+﻿@model List<RequestHeader>
+@{
+    ViewData["Title"] = "DSC Queue";
+}
+
+<h2 class="mb-3">Approved Requests Awaiting Supply</h2>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No approved requests waiting.</p>
+}
+else
+{
+    <table class="table table-hover">
+        <thead>
+            <tr><th>#</th><th>Mixing Center</th><th>Requested By</th><th>Date Needed</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.OrderBy(r => r.DateNeeded))
+            {
+                var overdue = r.DateNeeded < DateTime.Today;
+                <tr class="@(overdue ? "table-danger" : "")">
+                    <td>@r.Id</td>
+                    <td>@r.MixingCenter</td>
+                    <td>@r.RequestedBy</td>
+                    <td>@r.DateNeeded?.ToString("dd MMM yyyy") @(overdue ? "(overdue)" : "")</td>
+                    <td><a asp-action="Fulfil" asp-route-id="@r.Id" class="btn btn-sm btn-success">Fulfil</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -1,0 +1,126 @@
+﻿@model NewRequestVm
+@{ ViewData["Title"] = "New Request"; }
+
+<h2>New Colorant / OS Request</h2>
+
+<form asp-action="Create" method="post" id="requestForm">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label asp-for="MixingCenter" class="form-label">Mixing Center</label>
+            <select asp-for="MixingCenter" asp-items="@(new SelectList(Model.Centers))" class="form-select">
+                <option value="">-- Select --</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="DateNeeded" class="form-label">Date Needed</label>
+            <input asp-for="DateNeeded" type="date" class="form-control"
+                   min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">Add items</div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-7">
+                    <select id="itemPick" class="form-select">
+                        @foreach (var c in Model.Catalog)
+                        {
+                            <option value="@c.ItemCode">@c.Title (@c.Category, @c.Uom)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input id="qtyPick" type="number" min="0.01" step="any" placeholder="Qty" class="form-control" />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-secondary" onclick="addLine()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead><tr><th>Item</th><th style="width:120px">Qty</th><th style="width:100px"></th></tr></thead>
+        <tbody id="lines">
+            @for (var i = 0; i < Model.Lines.Count; i++)
+            {
+                var item = Model.Catalog.FirstOrDefault(c => c.ItemCode == Model.Lines[i].ItemCode);
+                <tr data-code="@Model.Lines[i].ItemCode">
+                    <td>@(item?.Title ?? Model.Lines[i].ItemCode)</td>
+                    <td>@Model.Lines[i].Qty</td>
+                    <td>
+                        <button type="button" class="btn btn-link text-danger p-0" onclick="removeLine(this)">Remove</button>
+                        <input type="hidden" data-f="ItemCode" value="@Model.Lines[i].ItemCode" />
+                        <input type="hidden" data-f="Qty" value="@Model.Lines[i].Qty" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p id="emptyMsg" class="text-muted">No items added yet.</p>
+
+    <button type="submit" class="btn btn-primary">Submit for approval</button>
+    <a asp-action="Mine" class="btn btn-link">Cancel</a>
+</form>
+
+@section Scripts {
+<script>
+function addLine() {
+    const pick = document.getElementById('itemPick');
+    const qty = document.getElementById('qtyPick');
+    if (!pick.value) return;
+    if (!(Number(qty.value) > 0)) { alert('Enter a quantity greater than 0.'); return; }
+
+    // If the item is already listed, add to its quantity instead of duplicating
+    const existing = document.querySelector(`#lines tr[data-code="${CSS.escape(pick.value)}"]`);
+    if (existing) {
+        const qtyInput = existing.querySelector('input[data-f="Qty"]');
+        const newQty = Number(qtyInput.value) + Number(qty.value);
+        qtyInput.value = newQty;
+        existing.children[1].textContent = newQty;
+        qty.value = '';
+        return;
+    }
+
+    const tr = document.createElement('tr');
+    tr.dataset.code = pick.value;
+    const tdName = document.createElement('td');
+    tdName.textContent = pick.selectedOptions[0].text;
+    const tdQty = document.createElement('td');
+    tdQty.textContent = qty.value;
+    const tdAct = document.createElement('td');
+    tdAct.innerHTML = '<button type="button" class="btn btn-link text-danger p-0" onclick="removeLine(this)">Remove</button>';
+    [['ItemCode', pick.value], ['Qty', qty.value]].forEach(([f, v]) => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.dataset.f = f; inp.value = v;
+        tdAct.appendChild(inp);
+    });
+    tr.append(tdName, tdQty, tdAct);
+    document.getElementById('lines').appendChild(tr);
+    qty.value = '';
+    reindex();
+}
+
+function removeLine(btn) { btn.closest('tr').remove(); reindex(); }
+
+// MVC binding needs Lines[0], Lines[1]... with no gaps
+function reindex() {
+    const rows = document.querySelectorAll('#lines tr');
+    rows.forEach((tr, i) =>
+        tr.querySelectorAll('input[data-f]').forEach(inp => inp.name = `Lines[${i}].${inp.dataset.f}`));
+    document.getElementById('emptyMsg').style.display = rows.length ? 'none' : '';
+}
+
+document.getElementById('requestForm').addEventListener('submit', e => {
+    if (!document.querySelectorAll('#lines tr').length) {
+        e.preventDefault();
+        alert('Add at least one item.');
+    }
+});
+
+reindex();
+</script>
+}

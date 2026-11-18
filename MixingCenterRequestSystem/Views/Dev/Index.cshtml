@@ -1,0 +1,40 @@
+﻿@model MixingCenterRequests.Services.FakeDataService
+@{
+    ViewData["Title"] = "Dev Tools";
+}
+
+<h2>Dev Tools</h2>
+<p>Signed in as <b>@User.Identity?.Name</b></p>
+
+<h4>Switch role</h4>
+<form asp-action="SetRole" method="post" class="d-flex gap-2 mb-4">
+    @foreach (var r in new[] { "MixingCenter", "MixingCenter2", "DSC", "None" })
+    {
+        <button name="role" value="@r" class="btn btn-outline-primary">@r</button>
+    }
+</form>
+
+<h4>Simulate City Manager approval</h4>
+@{
+    var pending = Model.Requests.Where(r => r.Status == "Pending Approval").ToList();
+}
+@if (!pending.Any())
+{
+    <p class="text-muted">Nothing pending.</p>
+}
+@foreach (var r in pending)
+{
+    <form asp-action="Approve" method="post" class="d-flex gap-2 align-items-center mb-2">
+        <input type="hidden" name="id" value="@r.Id" />
+        <span>#@r.Id – @r.MixingCenter – @Model.Lines.Count(l => l.RequestId == r.Id) item(s)</span>
+        <input name="comment" class="form-control w-auto" placeholder="Comment" />
+        <button name="approve" value="true" class="btn btn-success btn-sm">Approve</button>
+        <button name="approve" value="false" class="btn btn-danger btn-sm">Reject</button>
+    </form>
+}
+
+<h4 class="mt-4">Emails sent</h4>
+<ul>@foreach (var m in Model.SentMail) {
+    <li>@m</li>
+}
+</ul>
