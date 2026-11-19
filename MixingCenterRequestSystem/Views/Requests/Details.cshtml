@@ -21,14 +21,14 @@
 
 <table class="table">
     <thead>
-        <tr><th>Item</th><th>Code</th><th>Requested</th><th>Supplied</th><th>Status</th><th>DSC Comment</th></tr>
+        <tr><th>Product</th><th>Code</th><th>Requested</th><th>Supplied</th><th>Status</th><th>DSC Comment</th></tr>
     </thead>
     <tbody>
         @foreach (var l in Model.Lines)
         {
             <tr>
                 <td>@l.Title</td>
-                <td>@l.ItemCode</td>
+                <td>@l.ProductCode</td>
                 <td>@l.QtyRequested</td>
                 <td>@(l.LineStatus == "Pending" ? "-" : l.QtySupplied.ToString())</td>
                 <td><partial name="_StatusBadge" model="l.LineStatus" /></td>

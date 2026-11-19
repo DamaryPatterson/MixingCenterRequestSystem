@@ -21,14 +21,14 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header">Add items</div>
+        <div class="card-header">Add products</div>
         <div class="card-body">
             <div class="row g-2">
                 <div class="col-md-7">
-                    <select id="itemPick" class="form-select">
+                    <select id="productPick" class="form-select">
                         @foreach (var c in Model.Catalog)
                         {
-                            <option value="@c.ItemCode">@c.Title (@c.Category, @c.Uom)</option>
+                            <option value="@c.ProductCode">@c.Title (@c.Category, @c.Uom)</option>
                         }
                     </select>
                 </div>
@@ -43,24 +43,24 @@
     </div>
 
     <table class="table table-striped">
-        <thead><tr><th>Item</th><th style="width:120px">Qty</th><th style="width:100px"></th></tr></thead>
+        <thead><tr><th>Product</th><th style="width:120px">Qty</th><th style="width:100px"></th></tr></thead>
         <tbody id="lines">
             @for (var i = 0; i < Model.Lines.Count; i++)
             {
-                var item = Model.Catalog.FirstOrDefault(c => c.ItemCode == Model.Lines[i].ItemCode);
-                <tr data-code="@Model.Lines[i].ItemCode">
-                    <td>@(item?.Title ?? Model.Lines[i].ItemCode)</td>
+                var product = Model.Catalog.FirstOrDefault(c => c.ProductCode == Model.Lines[i].ProductCode);
+                <tr data-code="@Model.Lines[i].ProductCode">
+                    <td>@(product?.Title ?? Model.Lines[i].ProductCode)</td>
                     <td>@Model.Lines[i].Qty</td>
                     <td>
                         <button type="button" class="btn btn-link text-danger p-0" onclick="removeLine(this)">Remove</button>
-                        <input type="hidden" data-f="ItemCode" value="@Model.Lines[i].ItemCode" />
+                        <input type="hidden" data-f="ProductCode" value="@Model.Lines[i].ProductCode" />
                         <input type="hidden" data-f="Qty" value="@Model.Lines[i].Qty" />
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-    <p id="emptyMsg" class="text-muted">No items added yet.</p>
+    <p id="emptyMsg" class="text-muted">No products added yet.</p>
 
     <button type="submit" class="btn btn-primary">Submit for approval</button>
     <a asp-action="Mine" class="btn btn-link">Cancel</a>
@@ -69,12 +69,12 @@
 @section Scripts {
 <script>
 function addLine() {
-    const pick = document.getElementById('itemPick');
+    const pick = document.getElementById('productPick');
     const qty = document.getElementById('qtyPick');
     if (!pick.value) return;
     if (!(Number(qty.value) > 0)) { alert('Enter a quantity greater than 0.'); return; }
 
-    // If the item is already listed, add to its quantity instead of duplicating
+    // If the product is already listed, add to its quantity instead of duplicating
     const existing = document.querySelector(`#lines tr[data-code="${CSS.escape(pick.value)}"]`);
     if (existing) {
         const qtyInput = existing.querySelector('input[data-f="Qty"]');
@@ -93,7 +93,7 @@ function addLine() {
     tdQty.textContent = qty.value;
     const tdAct = document.createElement('td');
     tdAct.innerHTML = '<button type="button" class="btn btn-link text-danger p-0" onclick="removeLine(this)">Remove</button>';
-    [['ItemCode', pick.value], ['Qty', qty.value]].forEach(([f, v]) => {
+    [['ProductCode', pick.value], ['Qty', qty.value]].forEach(([f, v]) => {
         const inp = document.createElement('input');
         inp.type = 'hidden'; inp.dataset.f = f; inp.value = v;
         tdAct.appendChild(inp);
@@ -117,7 +117,7 @@ function reindex() {
 document.getElementById('requestForm').addEventListener('submit', e => {
     if (!document.querySelectorAll('#lines tr').length) {
         e.preventDefault();
-        alert('Add at least one item.');
+        alert('Add at least one product.');
     }
 });
 

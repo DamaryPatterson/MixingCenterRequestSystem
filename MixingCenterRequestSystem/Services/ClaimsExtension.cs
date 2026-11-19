@@ -2,7 +2,7 @@
 
 namespace MixingCenterRequests.Models;
 
-public record CatalogItem(string Title, string ItemCode, string Category, string Uom);
+public record Product(string Title, string ProductCode, string Category, string Uom);
 
 public class RequestHeader
 {
@@ -19,7 +19,7 @@ public class RequestLine
     public int Id { get; set; }
     public int RequestId { get; set; }
     public string Title { get; set; } = "";
-    public string ItemCode { get; set; } = "";
+    public string ProductCode { get; set; } = "";
     public double QtyRequested { get; set; }
     public double QtySupplied { get; set; }
     public string LineStatus { get; set; } = "";

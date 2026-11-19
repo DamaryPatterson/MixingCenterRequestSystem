@@ -28,17 +28,17 @@ public class RequestsController : Controller
         if (!centers.Contains(vm.MixingCenter))
             ModelState.AddModelError(nameof(vm.MixingCenter), "Select a valid mixing center.");
         if (vm.Lines.Count == 0)
-            ModelState.AddModelError("", "Add at least one item.");
+            ModelState.AddModelError("", "Add at least one product.");
         if (vm.DateNeeded < DateTime.Today)
             ModelState.AddModelError(nameof(vm.DateNeeded), "Date needed can't be in the past.");
 
-        // Never trust posted item details; resolve against the catalog
-        var resolved = new List<(CatalogItem, double)>();
+        // Never trust posted product details; resolve against the catalog
+        var resolved = new List<(Product, double)>();
         foreach (var line in vm.Lines)
         {
-            var item = catalog.FirstOrDefault(c => c.ItemCode == line.ItemCode);
-            if (item is null) ModelState.AddModelError("", $"Unknown item {line.ItemCode}.");
-            else resolved.Add((item, line.Qty));
+            var product = catalog.FirstOrDefault(c => c.ProductCode == line.ProductCode);
+            if (product is null) ModelState.AddModelError("", $"Unknown product {line.ProductCode}.");
+            else resolved.Add((product, line.Qty));
         }
 
         if (!ModelState.IsValid)

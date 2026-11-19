@@ -26,7 +26,7 @@
 {
     <form asp-action="Approve" method="post" class="d-flex gap-2 align-items-center mb-2">
         <input type="hidden" name="id" value="@r.Id" />
-        <span>#@r.Id – @r.MixingCenter – @Model.Lines.Count(l => l.RequestId == r.Id) item(s)</span>
+        <span>#@r.Id – @r.MixingCenter – @Model.Lines.Count(l => l.RequestId == r.Id) product(s)</span>
         <input name="comment" class="form-control w-auto" placeholder="Comment" />
         <button name="approve" value="true" class="btn btn-success btn-sm">Approve</button>
         <button name="approve" value="false" class="btn btn-danger btn-sm">Reject</button>

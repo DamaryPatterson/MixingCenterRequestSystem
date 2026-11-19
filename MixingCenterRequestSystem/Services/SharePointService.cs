@@ -89,7 +89,7 @@ public class SharePointService : IDataService
         Id = int.Parse(Str(f, "id")),
         RequestId = (int)Num(f, "RequestID"),
         Title = Str(f, "Title"),
-        ItemCode = Str(f, "ItemCode"),
+        ProductCode = Str(f, "ItemCode"),
         QtyRequested = Num(f, "QtyRequested"),
         QtySupplied = Num(f, "QtySupplied"),
         LineStatus = Str(f, "LineStatus"),
@@ -97,10 +97,10 @@ public class SharePointService : IDataService
     };
 
     // ---------- Public API ----------
-    public async Task<List<CatalogItem>> GetCatalog() =>
+    public async Task<List<Product>> GetCatalog() =>
         (await GetFields("Items", "fields/Active eq 1"))
-        .Select(f => new CatalogItem(Str(f, "Title"), Str(f, "ItemCode"), Str(f, "Category"), Str(f, "UOM")))
-        .OrderBy(i => i.Title).ToList();
+        .Select(f => new Product(Str(f, "Title"), Str(f, "ItemCode"), Str(f, "Category"), Str(f, "UOM")))
+        .OrderBy(p => p.Title).ToList();
 
     public async Task<List<string>> GetMixingCenters() =>
         (await GetFields("MixingCenters")).Select(f => Str(f, "Title")).OrderBy(t => t).ToList();
@@ -118,7 +118,7 @@ public class SharePointService : IDataService
         (await GetFields("RequestLines", $"fields/RequestID eq {requestId}")).Select(ToLine).ToList();
 
     public async Task<int> CreateRequest(string center, string requestedBy, DateTime dateNeeded,
-                                         IEnumerable<(CatalogItem item, double qty)> lines)
+                                         IEnumerable<(Product product, double qty)> lines)
     {
         var id = await Create("Requests", new()
         {
@@ -129,12 +129,12 @@ public class SharePointService : IDataService
             ["Status"] = "Pending Approval"
         });
 
-        foreach (var (item, qty) in lines)
+        foreach (var (product, qty) in lines)
             await Create("RequestLines", new()
             {
                 ["RequestID"] = id,
-                ["Title"] = item.Title,
-                ["ItemCode"] = item.ItemCode,
+                ["Title"] = product.Title,
+                ["ItemCode"] = product.ProductCode,
                 ["QtyRequested"] = qty,
                 ["LineStatus"] = "Pending"
             });

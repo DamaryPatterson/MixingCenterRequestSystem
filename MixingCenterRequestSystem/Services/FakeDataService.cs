@@ -7,7 +7,7 @@ public class FakeDataService : IDataService
     private readonly object _lock = new();
     private int _nextReq = 1, _nextLine = 1;
 
-    private readonly List<CatalogItem> _catalog = new()
+    private readonly List<Product> _catalog = new()
     {
         new("Black Colorant", "CLR-B1", "Colorant", "QT"),
         new("Red Oxide Colorant", "CLR-R2", "Colorant", "QT"),
@@ -21,7 +21,7 @@ public class FakeDataService : IDataService
     public List<RequestLine> Lines { get; } = new();
     public List<string> SentMail { get; } = new();
 
-    public Task<List<CatalogItem>> GetCatalog() => Task.FromResult(_catalog.ToList());
+    public Task<List<Product>> GetCatalog() => Task.FromResult(_catalog.ToList());
     public Task<List<string>> GetMixingCenters() => Task.FromResult(_centers.ToList());
 
     public Task<List<RequestHeader>> GetRequestsByUser(string email)
@@ -37,7 +37,7 @@ public class FakeDataService : IDataService
     { lock (_lock) return Task.FromResult(Lines.Where(l => l.RequestId == requestId).ToList()); }
 
     public Task<int> CreateRequest(string center, string requestedBy, DateTime dateNeeded,
-                                   IEnumerable<(CatalogItem item, double qty)> lines)
+                                   IEnumerable<(Product product, double qty)> lines)
     {
         lock (_lock)
         {
@@ -50,13 +50,13 @@ public class FakeDataService : IDataService
                 DateNeeded = dateNeeded,
                 Status = "Pending Approval"
             });
-            foreach (var (item, qty) in lines)
+            foreach (var (product, qty) in lines)
                 Lines.Add(new RequestLine
                 {
                     Id = _nextLine++,
                     RequestId = id,
-                    Title = item.Title,
-                    ItemCode = item.ItemCode,
+                    Title = product.Title,
+                    ProductCode = product.ProductCode,
                     QtyRequested = qty,
                     LineStatus = "Pending"
                 });

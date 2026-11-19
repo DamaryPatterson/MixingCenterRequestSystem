@@ -83,7 +83,7 @@ public class DscController : Controller
 
         await _sp.SendMail(header.RequestedBy, $"Colorant/OS request #{header.Id}: {status}",
             $"<p>The DSC has processed your request. Status: <b>{status}</b>.</p>" +
-            $"<table border='1' cellpadding='4'><tr><th>Item</th><th>Requested</th><th>Supplied</th><th>Status</th></tr>{rows}</table>");
+            $"<table border='1' cellpadding='4'><tr><th>Product</th><th>Requested</th><th>Supplied</th><th>Status</th></tr>{rows}</table>");
 
         TempData["Message"] = $"Request #{header.Id} marked as {status}.";
         return RedirectToAction(nameof(Index));

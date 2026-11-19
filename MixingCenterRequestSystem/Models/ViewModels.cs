@@ -9,13 +9,13 @@ public class NewRequestVm
     public List<LineInput> Lines { get; set; } = new();
 
     // Dropdown data (not posted)
-    public List<CatalogItem> Catalog { get; set; } = new();
+    public List<Product> Catalog { get; set; } = new();
     public List<string> Centers { get; set; } = new();
 }
 
 public class LineInput
 {
-    [Required] public string ItemCode { get; set; } = "";
+    [Required] public string ProductCode { get; set; } = "";
     [Range(0.01, 100000)] public double Qty { get; set; }
 }
 

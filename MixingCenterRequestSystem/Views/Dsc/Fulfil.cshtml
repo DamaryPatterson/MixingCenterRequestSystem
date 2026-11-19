@@ -13,7 +13,7 @@
 
     <table class="table align-middle">
         <thead>
-            <tr><th>Item</th><th>Requested</th><th>Supply?</th><th style="width:150px">Qty Supplied</th><th>Comment</th></tr>
+            <tr><th>Product</th><th>Requested</th><th>Supply?</th><th style="width:150px">Qty Supplied</th><th>Comment</th></tr>
         </thead>
         <tbody>
             @for (var i = 0; i < Model.Lines.Count; i++)
@@ -72,9 +72,9 @@
         document.getElementById('fulfilForm').addEventListener('submit', e => {
             const declined = document.querySelectorAll('.supply-toggle:not(:checked)').length;
             const total = document.querySelectorAll('.supply-toggle').length;
-            const msg = declined === total ? 'Decline ALL items on this request?'
-                : declined > 0 ? `Supply ${total - declined} item(s) and decline ${declined}?`
-                    : 'Supply all items?';
+            const msg = declined === total ? 'Decline ALL products on this request?'
+                : declined > 0 ? `Supply ${total - declined} product(s) and decline ${declined}?`
+                    : 'Supply all products?';
             if (!confirm(msg)) e.preventDefault();
         });
     </script>
