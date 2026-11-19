@@ -63,4 +63,53 @@ public class RequestsController : Controller
         if (header.RequestedBy != User.Email()) return Forbid();   // only your own requests
         return View(new RequestDetailsVm { Header = header, Lines = await _sp.GetLines(id) });
     }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> AcknowledgeReceipt(ReceiptVm vm)
+    {
+        var header = await _sp.GetRequest(vm.RequestId);
+        if (header is null) return NotFound();
+        if (header.RequestedBy != User.Email()) return Forbid();
+
+        if (header.Status == "Acknowledged")
+        {
+            TempData["Message"] = $"Receipt for request #{vm.RequestId} was already acknowledged.";
+            return RedirectToAction(nameof(Details), new { id = vm.RequestId });
+        }
+
+        if (header.Status != "Supplied" && header.Status != "Partially Supplied")
+        {
+            TempData["Error"] = "Receipt can only be acknowledged after items have been supplied.";
+            return RedirectToAction(nameof(Details), new { id = vm.RequestId });
+        }
+
+        var suppliedLines = (await _sp.GetLines(vm.RequestId))
+            .Where(line => line.LineStatus == "Supplied").ToList();
+        if (vm.Lines.Count != suppliedLines.Count ||
+            suppliedLines.Any(line => vm.Lines.Count(input => input.LineId == line.Id) != 1))
+        {
+            TempData["Error"] = "Submit a received quantity for every supplied item.";
+            return RedirectToAction(nameof(Details), new { id = vm.RequestId });
+        }
+
+        foreach (var line in suppliedLines)
+        {
+            var input = vm.Lines.Single(input => input.LineId == line.Id);
+            if (input.QtyReceived is not double quantity || !double.IsFinite(quantity) || quantity < 0)
+            {
+                TempData["Error"] = $"Enter a valid non-negative received quantity for {line.Title}.";
+                return RedirectToAction(nameof(Details), new { id = vm.RequestId });
+            }
+        }
+
+        foreach (var line in suppliedLines)
+        {
+            var input = vm.Lines.Single(input => input.LineId == line.Id);
+            await _sp.UpdateReceivedQuantity(line.Id, input.QtyReceived!.Value);
+        }
+
+        await _sp.UpdateRequestStatus(vm.RequestId, "Acknowledged");
+        TempData["Message"] = $"Receipt quantities recorded for request #{vm.RequestId}.";
+        return RedirectToAction(nameof(Details), new { id = vm.RequestId });
+    }
 }

@@ -22,6 +22,7 @@ public class RequestLine
     public string ProductCode { get; set; } = "";
     public double QtyRequested { get; set; }
     public double QtySupplied { get; set; }
+    public double QtyReceived { get; set; }
     public string LineStatus { get; set; } = "";
     public string DscComment { get; set; } = "";
 }

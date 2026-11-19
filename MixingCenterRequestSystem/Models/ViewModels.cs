@@ -25,6 +25,18 @@ public class RequestDetailsVm
     public List<RequestLine> Lines { get; set; } = new();
 }
 
+public class ReceiptVm
+{
+    public int RequestId { get; set; }
+    public List<ReceiptLineInput> Lines { get; set; } = new();
+}
+
+public class ReceiptLineInput
+{
+    public int LineId { get; set; }
+    public double? QtyReceived { get; set; }
+}
+
 public class FulfilVm
 {
     public int RequestId { get; set; }

@@ -92,6 +92,7 @@ public class SharePointService : IDataService
         ProductCode = Str(f, "ItemCode"),
         QtyRequested = Num(f, "QtyRequested"),
         QtySupplied = Num(f, "QtySupplied"),
+        QtyReceived = Num(f, "QtyReceived"),
         LineStatus = Str(f, "LineStatus"),
         DscComment = Str(f, "DSCComment")
     };
@@ -149,6 +150,9 @@ public class SharePointService : IDataService
             ["QtySupplied"] = qtySupplied,
             ["DSCComment"] = comment
         });
+
+    public Task UpdateReceivedQuantity(int lineId, double qtyReceived) =>
+        Update("RequestLines", lineId, new() { ["QtyReceived"] = qtyReceived });
 
     public Task UpdateRequestStatus(int id, string status) =>
         Update("Requests", id, new() { ["Status"] = status });

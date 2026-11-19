@@ -21,7 +21,7 @@
 
 <table class="table">
     <thead>
-        <tr><th>Product</th><th>Code</th><th>Requested</th><th>Supplied</th><th>Status</th><th>DSC Comment</th></tr>
+        <tr><th>Product</th><th>Code</th><th>Requested</th><th>Supplied</th><th>Received</th><th>Variance</th><th>Status</th><th>DSC Comment</th></tr>
     </thead>
     <tbody>
         @foreach (var l in Model.Lines)
@@ -31,11 +31,57 @@
                 <td>@l.ProductCode</td>
                 <td>@l.QtyRequested</td>
                 <td>@(l.LineStatus == "Pending" ? "-" : l.QtySupplied.ToString())</td>
+                <td>@(Model.Header.Status == "Acknowledged" && l.LineStatus == "Supplied" ? l.QtyReceived.ToString() : "-")</td>
+                <td>
+                    @if (Model.Header.Status == "Acknowledged" && l.LineStatus == "Supplied")
+                    {
+                        if (l.QtyReceived < l.QtySupplied)
+                        {
+                            <span class="text-danger">Short by @(l.QtySupplied - l.QtyReceived)</span>
+                        }
+                        else if (l.QtyReceived > l.QtySupplied)
+                        {
+                            <span class="text-warning">Over by @(l.QtyReceived - l.QtySupplied)</span>
+                        }
+                        else
+                        {
+                            <span class="text-success">Matches</span>
+                        }
+                    }
+                </td>
                 <td><partial name="_StatusBadge" model="l.LineStatus" /></td>
                 <td>@l.DscComment</td>
             </tr>
         }
     </tbody>
 </table>
+
+@if (Model.Header.Status == "Supplied" || Model.Header.Status == "Partially Supplied")
+{
+    var suppliedLines = Model.Lines.Where(l => l.LineStatus == "Supplied").ToList();
+    <h3 class="h5 mt-4">Confirm received quantities</h3>
+    <p>Enter the actual quantity received for each item. You can report a shortage or overage.</p>
+    <form asp-action="AcknowledgeReceipt" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Header.Id" />
+        <table class="table table-sm">
+            <thead><tr><th>Product</th><th>Sent</th><th style="width: 220px">Received</th></tr></thead>
+            <tbody>
+                @for (var i = 0; i < suppliedLines.Count; i++)
+                {
+                    var line = suppliedLines[i];
+                    <tr>
+                        <td>@line.Title<input type="hidden" name="Lines[@i].LineId" value="@line.Id" /></td>
+                        <td>@line.QtySupplied</td>
+                        <td><input type="number" name="Lines[@i].QtyReceived" value="@line.QtySupplied" min="0" step="any" required class="form-control" /></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-success"
+                onclick="return confirm('Submit these received quantities?');">
+            Confirm Receipt
+        </button>
+    </form>
+}
 
 <a asp-action="Mine" class="btn btn-outline-secondary">Back</a>

@@ -74,6 +74,12 @@ public class FakeDataService : IDataService
         return Task.CompletedTask;
     }
 
+    public Task UpdateReceivedQuantity(int lineId, double qtyReceived)
+    {
+        lock (_lock) Lines.First(x => x.Id == lineId).QtyReceived = qtyReceived;
+        return Task.CompletedTask;
+    }
+
     public Task UpdateRequestStatus(int id, string status)
     { lock (_lock) Requests.First(r => r.Id == id).Status = status; return Task.CompletedTask; }
 
